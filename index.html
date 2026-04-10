@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>TETROS</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <canvas id="bg"></canvas>
+
+    <!-- DESKTOP LAYOUT -->
+    <div class="game-container desktop-layout">
+        <div class="side-panel left">
+            <div class="info-box">
+                <h3>VOID</h3>
+                <p class="val-score">0</p>
+            </div>
+            <div class="info-box">
+                <h3>DIMENSION</h3>
+                <p class="val-level">1</p>
+            </div>
+            <div class="info-box">
+                <h3>RIFTS</h3>
+                <p class="val-lines">0</p>
+            </div>
+        </div>
+        <div class="board-wrapper">
+            <h1 id="title">TETROS</h1>
+            <canvas id="board" width="300" height="600"></canvas>
+            <div id="overlay" class="overlay">
+                <div class="overlay-text" id="overlayText">ENTER THE VOID</div>
+                <button id="startBtn">AWAKEN</button>
+            </div>
+        </div>
+        <div class="side-panel right">
+            <div class="info-box">
+                <h3>NEXT ENTITY</h3>
+                <canvas id="next" width="150" height="150"></canvas>
+            </div>
+            <div class="info-box controls">
+                <h3>CHANNELS</h3>
+                <p class="ctrl">← → DRIFT</p>
+                <p class="ctrl">↑ MORPH</p>
+                <p class="ctrl">↓ DESCEND</p>
+                <p class="ctrl">SPACE COLLAPSE</p>
+                <p class="ctrl">P FREEZE</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- MOBILE LAYOUT -->
+    <div class="game-container mobile-layout">
+        <div class="mobile-top-bar">
+            <div class="info-box">
+                <h3>VOID</h3>
+                <p class="val-score">0</p>
+            </div>
+            <div class="info-box">
+                <h3>DIM</h3>
+                <p class="val-level">1</p>
+            </div>
+            <div class="info-box">
+                <h3>RIFTS</h3>
+                <p class="val-lines">0</p>
+            </div>
+            <div class="info-box next-box">
+                <h3>NEXT</h3>
+                <canvas id="nextMobile" width="100" height="100"></canvas>
+            </div>
+        </div>
+        <div class="board-wrapper">
+            <h1 class="mobile-title">TETROS</h1>
+            <canvas id="boardMobile" width="300" height="600"></canvas>
+            <div class="overlay" id="overlayMobile">
+                <div class="overlay-text" id="overlayTextMobile">ENTER THE VOID</div>
+                <button class="start-btn-mobile" id="startBtnMobile">AWAKEN</button>
+            </div>
+        </div>
+        <div class="touch-controls">
+            <div class="touch-row">
+                <button class="touch-btn" data-action="rotate" aria-label="Rotate">
+                    <svg viewBox="0 0 40 40"><path d="M20 5 A15 15 0 1 1 5 20" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round"/><path d="M15 2 L20 5 L15 8" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                </button>
+                <button class="touch-btn drop-btn" data-action="hardDrop" aria-label="Hard Drop">
+                    <svg viewBox="0 0 40 40"><path d="M20 5 L20 30 M12 22 L20 30 L28 22" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/><line x1="10" y1="35" x2="30" y2="35" stroke="currentColor" stroke-width="3" stroke-linecap="round"/></svg>
+                </button>
+            </div>
+            <div class="touch-row">
+                <button class="touch-btn" data-action="left" aria-label="Left">
+                    <svg viewBox="0 0 40 40"><path d="M25 10 L15 20 L25 30" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                </button>
+                <button class="touch-btn" data-action="down" aria-label="Down">
+                    <svg viewBox="0 0 40 40"><path d="M10 15 L20 25 L30 15" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                </button>
+                <button class="touch-btn" data-action="right" aria-label="Right">
+                    <svg viewBox="0 0 40 40"><path d="M15 10 L25 20 L15 30" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script src="tetris.js"></script>
+</body>
+</html>
