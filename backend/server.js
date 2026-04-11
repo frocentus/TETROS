@@ -139,6 +139,7 @@ app.post('/api/scores', rateLimit, async (req, res) => {
 // ═══════════════════════════
 app.get('/api/scores', async (req, res) => {
     const period = req.query.period || 'all';
+    const limit = Math.min(Math.max(parseInt(req.query.limit, 10) || 10, 1), 100);
     let dateFilter = '';
 
     if (period === 'day') {
@@ -149,7 +150,7 @@ app.get('/api/scores', async (req, res) => {
 
     try {
         const [rows] = await pool.execute(
-            `SELECT username, score, level, lines_cleared FROM highscores ${dateFilter} ORDER BY score DESC LIMIT 10`
+            `SELECT username, score, level, lines_cleared FROM highscores ${dateFilter} ORDER BY score DESC LIMIT ${limit}`
         );
         res.json(rows);
     } catch (err) {

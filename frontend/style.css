@@ -79,7 +79,7 @@ body {
     z-index: 10;
 }
 .desktop-layout .overlay { top: auto; bottom: 0; width: var(--board-w); height: var(--board-h); }
-.overlay.hidden, .hidden { display: none; }
+.overlay.hidden, .hidden { display: none !important; }
 
 .overlay-text {
     font-size: 1.1rem;
@@ -188,6 +188,12 @@ body {
 .highscore-list li .hs-score { color: var(--c-cyan); }
 .highscore-list li:first-child .name,
 .highscore-list li:first-child .hs-score { color: #fff; text-shadow: 0 0 10px var(--c-cyan); }
+
+.hs-link {
+    display: inline-block; margin-top: 8px; font-size: 0.5rem; letter-spacing: 3px;
+    color: #666; text-decoration: none; text-transform: uppercase; transition: color 0.3s;
+}
+.hs-link:hover { color: var(--c-cyan); text-shadow: 0 0 8px var(--c-cyan); }
 
 /* ═══ EFFECTS ═══ */
 .line-clear-flash { animation: screenFlash 0.4s ease-out; }

@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>TETROS — HIGHSCORES</title>
+<link rel="icon" href="icon.svg" type="image/svg+xml">
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;900&display=swap');
+*{margin:0;padding:0;box-sizing:border-box}
+:root{--c-mag:#ff00ff;--c-cyan:#00ffff;--c-mag-dim:#ff00ff88;--c-mag-ghost:#ff00ff44;--font:'Orbitron',monospace}
+body{background:#000;color:#ccc;font-family:var(--font);display:flex;flex-direction:column;align-items:center;min-height:100vh;padding:24px 16px}
+h1{color:#fff;font-size:1.6rem;letter-spacing:12px;margin-bottom:6px;text-shadow:0 0 20px var(--c-mag),0 0 60px var(--c-mag)}
+.back{color:#666;font-size:0.5rem;letter-spacing:3px;text-decoration:none;text-transform:uppercase;margin-bottom:24px;transition:color 0.3s}
+.back:hover{color:var(--c-cyan);text-shadow:0 0 8px var(--c-cyan)}
+.tabs{display:flex;gap:6px;margin-bottom:16px}
+.tab{background:none;border:1px solid #ffffff11;color:#666;font-family:var(--font);font-size:0.6rem;letter-spacing:3px;padding:6px 16px;cursor:pointer;transition:all 0.3s;text-transform:uppercase}
+.tab.active,.tab:hover{color:var(--c-cyan);border-color:var(--c-cyan);text-shadow:0 0 8px var(--c-cyan)}
+.list{width:100%;max-width:500px}
+table{width:100%;border-collapse:collapse;font-size:0.7rem}
+th{text-align:left;color:var(--c-mag-dim);font-size:0.55rem;letter-spacing:3px;text-transform:uppercase;padding:8px 6px;border-bottom:1px solid #ffffff11}
+th:last-child,td:last-child{text-align:right}
+th:nth-child(3),td:nth-child(3){text-align:center}
+th:nth-child(4),td:nth-child(4){text-align:center}
+td{padding:7px 6px;border-bottom:1px solid #ffffff08;color:#aaa}
+tr:hover td{background:#ffffff05}
+.rank{color:var(--c-mag-dim);width:30px}
+.name{color:#ddd}
+.sc{color:var(--c-cyan);font-weight:700}
+tr:first-child .name,tr:first-child .sc{color:#fff;text-shadow:0 0 10px var(--c-cyan)}
+.empty{text-align:center;color:#444;padding:20px;font-size:0.6rem;letter-spacing:3px}
+</style>
+</head>
+<body>
+<h1>HIGHSCORES</h1>
+<a href="/" class="back">← BACK TO GAME</a>
+<div class="tabs">
+    <button class="tab active" data-period="all">ALL TIME</button>
+    <button class="tab" data-period="week">THIS WEEK</button>
+    <button class="tab" data-period="day">TODAY</button>
+</div>
+<div class="list">
+    <table>
+        <thead><tr><th>#</th><th>PLAYER</th><th>LVL</th><th>LINES</th><th>SCORE</th></tr></thead>
+        <tbody id="scores"><tr><td colspan="5" class="empty">LOADING...</td></tr></tbody>
+    </table>
+</div>
+<script>
+let current = 'all';
+async function load(period) {
+    current = period;
+    document.querySelectorAll('.tab').forEach(t => t.classList.toggle('active', t.dataset.period === current));
+    try {
+        const res = await fetch('/api/scores?period=' + current + '&limit=100');
+        if (!res.ok) return;
+        const data = await res.json();
+        const tbody = document.getElementById('scores');
+        if (data.length === 0) {
+            tbody.innerHTML = '<tr><td colspan="5" class="empty">NO SCORES YET</td></tr>';
+            return;
+        }
+        tbody.innerHTML = data.map((r, i) =>
+            '<tr><td class="rank">' + (i+1) + '.</td><td class="name">' + esc(r.username) + '</td><td>' + r.level + '</td><td>' + r.lines_cleared + '</td><td class="sc">' + r.score.toLocaleString() + '</td></tr>'
+        ).join('');
+    } catch { }
+}
+function esc(s){const d=document.createElement('div');d.textContent=s;return d.innerHTML}
+document.querySelectorAll('.tab').forEach(t => t.addEventListener('click', () => load(t.dataset.period)));
+load('all');
+</script>
+</body>
+</html>

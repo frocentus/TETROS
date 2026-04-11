@@ -1397,7 +1397,7 @@ async function fetchHighscores(period) {
     // update tab active states
     document.querySelectorAll('.hs-tab').forEach(t => t.classList.toggle('active', t.dataset.period === currentPeriod));
     try {
-        const res = await fetch(`${API_BASE}/scores?period=${currentPeriod}`);
+        const res = await fetch(`${API_BASE}/scores?period=${currentPeriod}&limit=5`);
         if (!res.ok) return;
         const data = await res.json();
         renderHighscores(data);
@@ -1429,6 +1429,9 @@ skipBtnMEl.addEventListener('click', hideGameOverUI);
 document.querySelectorAll('.hs-tab').forEach(tab => {
     tab.addEventListener('click', () => fetchHighscores(tab.dataset.period));
 });
+
+// ensure game-over form is hidden on initial load
+hideGameOverUI();
 
 // load highscores on page load
 fetchHighscores('all');

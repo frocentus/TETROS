@@ -1,7 +1,8 @@
-const CACHE_NAME = 'tetros-v3';
+const CACHE_NAME = 'tetros-v6';
 const ASSETS = [
     '/',
     '/index.html',
+    '/highscores.html',
     '/style.css',
     '/tetris.js',
     '/manifest.json',
