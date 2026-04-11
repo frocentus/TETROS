@@ -40,8 +40,8 @@ function setLines(v) { linesEls.forEach(el => el.textContent = v); }
 bgCanvas.width = window.innerWidth;
 bgCanvas.height = window.innerHeight;
 
-const COLS = 10;
-const ROWS = 20;
+const COLS = 14;
+const ROWS = 24;
 const BLOCK = 30; // desktop is always 30
 let BLOCK_M = 30; // mobile scales
 
@@ -85,38 +85,79 @@ window.addEventListener('resize', () => {
 // ═══════════════════════════════════════════
 // ABSTRACT ENTITIES - NOT YOUR MOTHERS TETRIS
 // ═══════════════════════════════════════════
-// Each "entity" is a non-standard abstract form
+// Each "entity" is a non-standard abstract form — 20 shapes
 const SHAPES = [
     null,
-    // "The Spire" - a tall asymmetric spike
+    // 1 "The Spire" - tall asymmetric spike
     [[1,0],[1,0],[1,1],[0,1]],
-    // "The Amoeba" - organic blob
+    // 2 "The Amoeba" - organic blob
     [[0,2,0],[2,2,2],[0,2,0]],
-    // "The Rift" - a zigzag tear in space
+    // 3 "The Rift" - zigzag tear in space
     [[3,0,0],[3,3,0],[0,3,3]],
-    // "The Shard" - crystalline diagonal
+    // 4 "The Shard" - crystalline diagonal
     [[0,0,4],[0,4,4],[4,4,0]],
-    // "The Void" - hollow frame
+    // 5 "The Void" - hollow frame
     [[5,5,5],[5,0,5],[5,5,5]],
-    // "The Fang" - predatory shape
+    // 6 "The Fang" - predatory shape
     [[6,0,6],[6,0,6],[0,6,0]],
-    // "The Sigil" - mystical asymmetric rune
+    // 7 "The Sigil" - mystical asymmetric rune
     [[0,7,0],[7,7,7],[7,0,0]],
-    // "The Fracture" - broken line
+    // 8 "The Fracture" - broken line
     [[8,8,0,0],[0,0,8,0],[0,0,8,8]],
-    // "The Eye" - watching you
+    // 9 "The Eye" - watching you
     [[0,9,0],[9,9,9],[0,9,0],[0,9,0]],
+    // 10 "The Helix" - spiraling DNA strand
+    [[10,0,0],[0,10,0],[0,0,10],[0,10,0]],
+    // 11 "The Claw" - three prongs reaching
+    [[11,0,11],[0,11,0],[11,0,11]],
+    // 12 "The Monolith" - imposing vertical slab
+    [[12],[12],[12],[12],[12]],
+    // 13 "The Parasite" - latches on from the side
+    [[0,13,13],[13,13,0],[0,13,0]],
+    // 14 "The Crown" - royal jagged top
+    [[14,0,14,0,14],[0,14,14,14,0]],
+    // 15 "The Worm" - slithering diagonal
+    [[15,0,0],[0,15,0],[0,15,0],[0,0,15]],
+    // 16 "The Anchor" - heavy bottom
+    [[0,16,0],[0,16,0],[16,16,16],[16,0,16]],
+    // 17 "The Phantom" - barely there, L with gap
+    [[17,0],[17,0],[17,17],[0,17]],
+    // 18 "The Nebula" - scattered cosmic dust
+    [[18,0,18],[0,18,0],[18,0,18]],
+    // 19 "The Scythe" - curved blade
+    [[0,0,19],[0,19,19],[19,19,0],[19,0,0]],
+    // 20 "The Colossus" - massive 2x3 block
+    [[20,20],[20,20],[20,20]],
+    // === CLASSIC TETROMINOS ===
+    // 21 I-piece
+    [[21,21,21,21]],
+    // 22 O-piece
+    [[22,22],[22,22]],
+    // 23 T-piece
+    [[0,23,0],[23,23,23]],
+    // 24 S-piece
+    [[0,24,24],[24,24,0]],
+    // 25 Z-piece
+    [[25,25,0],[0,25,25]],
+    // 26 L-piece
+    [[26,0],[26,0],[26,26]],
+    // 27 J-piece
+    [[0,27],[0,27],[27,27]],
 ];
 
 const ENTITY_NAMES = [
-    null, 'SPIRE', 'AMOEBA', 'RIFT', 'SHARD', 'VOID', 'FANG', 'SIGIL', 'FRACTURE', 'EYE'
+    null, 'SPIRE', 'AMOEBA', 'RIFT', 'SHARD', 'VOID', 'FANG', 'SIGIL', 'FRACTURE', 'EYE',
+    'HELIX', 'CLAW', 'MONOLITH', 'PARASITE', 'CROWN', 'WORM', 'ANCHOR', 'PHANTOM', 'NEBULA', 'SCYTHE', 'COLOSSUS',
+    'I-LINE', 'CUBE', 'T-RUNE', 'S-TWIST', 'Z-TWIST', 'L-BEND', 'J-BEND'
 ];
 
-// Colors shift based on time - these are base hues
-const BASE_HUES = [null, 300, 180, 60, 120, 30, 330, 210, 90, 270];
+// Colors shift based on time - these are base hues (27 entries)
+const BASE_HUES = [null, 300, 180, 60, 120, 30, 330, 210, 90, 270, 150, 345, 200, 45, 15, 240, 75, 165, 315, 105, 225, 190, 50, 280, 100, 10, 140, 260];
 
 let board, piece, nextPiece, score, lines, level, gameOver, paused, dropInterval, lastDrop;
 let particles = [];
+let combo = 0;       // consecutive line-clear counter
+let countingDown = false; // countdown lock
 let screenShake = 0;
 let globalTime = 0;
 let breathe = 0;
@@ -1162,8 +1203,12 @@ function clearLines() {
         }
     }
     if (cleared > 0) {
+        combo++;
         const points = [0, 100, 300, 500, 800];
-        score += (points[Math.min(cleared, 4)] || cleared * 200) * level;
+        let base = (points[Math.min(cleared, 4)] || cleared * 200) * level;
+        // combo bonus: 50 * combo * level for chains ≥ 2
+        if (combo >= 2) base += 50 * combo * level;
+        score += base;
         lines += cleared;
         level = Math.floor(lines / 10) + 1;
         dropInterval = Math.max(80, 1000 - (level - 1) * 75);
@@ -1183,6 +1228,8 @@ function clearLines() {
         if (cleared >= 3) {
             spawnDimensionRipple();
         }
+    } else {
+        combo = 0;
     }
 }
 
@@ -1205,6 +1252,7 @@ function drop() {
             getCanvas().parentElement.classList.add('shake');
             setTimeout(() => getCanvas().parentElement.classList.remove('shake'), 600);
             sndGameOver();
+            showGameOverUI();
         }
     } else {
         piece.y++;
@@ -1278,14 +1326,125 @@ function idleLoop(time) {
     if (!gameOver && paused) requestAnimationFrame(idleLoop);
 }
 
+// ═══════════════════════════
+// HIGHSCORE & GAME OVER UI
+// ═══════════════════════════
+const API_BASE = '/api';
+const gameoverForm = document.getElementById('gameoverForm');
+const gameoverFormM = document.getElementById('gameoverFormMobile');
+const inputName = document.getElementById('inputName');
+const inputEmail = document.getElementById('inputEmail');
+const inputNameM = document.getElementById('inputNameMobile');
+const inputEmailM = document.getElementById('inputEmailMobile');
+const formMsg = document.getElementById('formMsg');
+const formMsgM = document.getElementById('formMsgMobile');
+const submitBtn = document.getElementById('submitScoreBtn');
+const submitBtnM = document.getElementById('submitScoreBtnMobile');
+const skipBtnEl = document.getElementById('skipBtn');
+const skipBtnMEl = document.getElementById('skipBtnMobile');
+const highscoreList = document.getElementById('highscoreList');
+const highscoreListM = document.getElementById('highscoreListMobile');
+
+function showGameOverUI() {
+    gameoverForm.classList.remove('hidden');
+    gameoverFormM.classList.remove('hidden');
+    formMsg.textContent = '';
+    formMsgM.textContent = '';
+    inputName.value = '';
+    inputEmail.value = '';
+    inputNameM.value = '';
+    inputEmailM.value = '';
+    fetchHighscores();
+}
+
+function hideGameOverUI() {
+    gameoverForm.classList.add('hidden');
+    gameoverFormM.classList.add('hidden');
+}
+
+async function submitScore(name, email) {
+    const cleanName = name.trim();
+    if (!cleanName) {
+        formMsg.textContent = 'NAME REQUIRED';
+        formMsgM.textContent = 'NAME REQUIRED';
+        return;
+    }
+    const body = { username: cleanName, score, level, lines };
+    if (email && email.trim()) body.email = email.trim();
+
+    try {
+        const res = await fetch(`${API_BASE}/scores`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(body),
+        });
+        if (!res.ok) throw new Error('Server error');
+        formMsg.textContent = 'TRANSMITTED';
+        formMsgM.textContent = 'TRANSMITTED';
+        gameoverForm.querySelectorAll('input, .submit-btn').forEach(el => el.style.display = 'none');
+        gameoverFormM.querySelectorAll('input, .submit-btn').forEach(el => el.style.display = 'none');
+        fetchHighscores();
+    } catch {
+        formMsg.textContent = 'TRANSMISSION FAILED';
+        formMsgM.textContent = 'TRANSMISSION FAILED';
+    }
+}
+
+let currentPeriod = 'all';
+
+async function fetchHighscores(period) {
+    if (period) currentPeriod = period;
+    // update tab active states
+    document.querySelectorAll('.hs-tab').forEach(t => t.classList.toggle('active', t.dataset.period === currentPeriod));
+    try {
+        const res = await fetch(`${API_BASE}/scores?period=${currentPeriod}`);
+        if (!res.ok) return;
+        const data = await res.json();
+        renderHighscores(data);
+    } catch { /* silently fail */ }
+}
+
+function renderHighscores(data) {
+    const html = data.map((row, i) =>
+        `<li><span class="rank">${i + 1}.</span><span class="name">${escapeHtml(row.username)}</span><span class="hs-score">${row.score}</span></li>`
+    ).join('');
+    highscoreList.innerHTML = html;
+    highscoreListM.innerHTML = html;
+}
+
+function escapeHtml(str) {
+    const d = document.createElement('div');
+    d.textContent = str;
+    return d.innerHTML;
+}
+
+// wire up form buttons (desktop)
+submitBtn.addEventListener('click', () => submitScore(inputName.value, inputEmail.value));
+skipBtnEl.addEventListener('click', hideGameOverUI);
+// wire up form buttons (mobile)
+submitBtnM.addEventListener('click', () => submitScore(inputNameM.value, inputEmailM.value));
+skipBtnMEl.addEventListener('click', hideGameOverUI);
+
+// highscore tab clicks
+document.querySelectorAll('.hs-tab').forEach(tab => {
+    tab.addEventListener('click', () => fetchHighscores(tab.dataset.period));
+});
+
+// load highscores on page load
+fetchHighscores('all');
+
 function startGame() {
+    if (countingDown) return;
+    hideGameOverUI();
+    // reset form inputs visibility
+    [gameoverForm, gameoverFormM].forEach(f => f.querySelectorAll('input, .submit-btn').forEach(el => el.style.display = ''));
     initAudio();
     board = createBoard();
     trailBoard = Array.from({ length: ROWS }, () => new Array(COLS).fill(0));
-    score = 0; lines = 0; level = 1;
+    score = 0; lines = 0; level = 1; combo = 0;
     dropInterval = 1000;
     gameOver = false;
-    paused = false;
+    paused = true; // paused during countdown
     particles = [];
     screenShake = 0;
     setScore('0');
@@ -1294,12 +1453,51 @@ function startGame() {
     piece = createPiece(randomType());
     nextPiece = createPiece(randomType());
     drawNext();
-    overlay.classList.add('hidden');
-    overlayM.classList.add('hidden');
-    lastDrop = performance.now();
 
-    // start the psychedelic soundtrack
-    startMusic();
+    // countdown 3-2-1
+    countingDown = true;
+    startBtn.style.display = 'none';
+    startBtnM.style.display = 'none';
+    overlayText.style.animation = 'none';
+    overlayTextM.style.animation = 'none';
+    overlayText.style.opacity = '1';
+    overlayTextM.style.opacity = '1';
+    overlayText.style.fontSize = '3rem';
+    overlayTextM.style.fontSize = '2rem';
+
+    const steps = ['3', '2', '1', 'GO'];
+    let step = 0;
+    overlayText.textContent = steps[0];
+    overlayTextM.textContent = steps[0];
+    playTone(330, 0.15, 'triangle', 0.08);
+
+    const cdInterval = setInterval(() => {
+        step++;
+        if (step < steps.length) {
+            overlayText.textContent = steps[step];
+            overlayTextM.textContent = steps[step];
+            playTone(step === 3 ? 660 : 330, 0.15, 'triangle', 0.08);
+        }
+        if (step >= steps.length) {
+            clearInterval(cdInterval);
+            overlay.classList.add('hidden');
+            overlayM.classList.add('hidden');
+            // restore overlay styles
+            overlayText.style.animation = '';
+            overlayTextM.style.animation = '';
+            overlayText.style.opacity = '';
+            overlayTextM.style.opacity = '';
+            overlayText.style.fontSize = '';
+            overlayTextM.style.fontSize = '';
+            startBtn.style.display = '';
+            startBtnM.style.display = '';
+            paused = false;
+            countingDown = false;
+            lastDrop = performance.now();
+            startMusic();
+            requestAnimationFrame(update);
+        }
+    }, 700);
 
     requestAnimationFrame(update);
 }

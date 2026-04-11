@@ -5,6 +5,11 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>TETROS</title>
     <link rel="stylesheet" href="style.css">
+    <link rel="manifest" href="manifest.json">
+    <meta name="theme-color" content="#ff00ff">
+    <link rel="icon" href="icon.svg" type="image/svg+xml">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black">
 </head>
 <body>
     <canvas id="bg"></canvas>
@@ -27,9 +32,25 @@
         </div>
         <div class="board-wrapper">
             <h1 id="title">TETROS</h1>
-            <canvas id="board" width="300" height="600"></canvas>
+            <canvas id="board" width="420" height="720"></canvas>
             <div id="overlay" class="overlay">
                 <div class="overlay-text" id="overlayText">ENTER THE VOID</div>
+                <div class="gameover-form hidden" id="gameoverForm">
+                    <input type="text" id="inputName" placeholder="YOUR NAME" maxlength="20" autocomplete="off">
+                    <input type="email" id="inputEmail" placeholder="EMAIL (OPTIONAL)" maxlength="60" autocomplete="off">
+                    <p class="form-msg" id="formMsg"></p>
+                    <button class="submit-btn" id="submitScoreBtn">TRANSMIT</button>
+                    <button class="skip-btn" id="skipBtn">SKIP</button>
+                </div>
+                <div class="highscore-box" id="highscoreBox">
+                    <h3>TOP ENTITIES</h3>
+                    <div class="hs-tabs">
+                        <button class="hs-tab active" data-period="all">ALL</button>
+                        <button class="hs-tab" data-period="week">WEEK</button>
+                        <button class="hs-tab" data-period="day">TODAY</button>
+                    </div>
+                    <ul class="highscore-list" id="highscoreList"></ul>
+                </div>
                 <button id="startBtn">AWAKEN</button>
             </div>
         </div>
@@ -71,9 +92,25 @@
         </div>
         <div class="board-wrapper">
             <h1 class="mobile-title">TETROS</h1>
-            <canvas id="boardMobile" width="300" height="600"></canvas>
+            <canvas id="boardMobile" width="420" height="720"></canvas>
             <div class="overlay" id="overlayMobile">
                 <div class="overlay-text" id="overlayTextMobile">ENTER THE VOID</div>
+                <div class="gameover-form hidden" id="gameoverFormMobile">
+                    <input type="text" id="inputNameMobile" placeholder="YOUR NAME" maxlength="20" autocomplete="off">
+                    <input type="email" id="inputEmailMobile" placeholder="EMAIL (OPTIONAL)" maxlength="60" autocomplete="off">
+                    <p class="form-msg" id="formMsgMobile"></p>
+                    <button class="submit-btn" id="submitScoreBtnMobile">TRANSMIT</button>
+                    <button class="skip-btn" id="skipBtnMobile">SKIP</button>
+                </div>
+                <div class="highscore-box" id="highscoreBoxMobile">
+                    <h3>TOP ENTITIES</h3>
+                    <div class="hs-tabs">
+                        <button class="hs-tab active" data-period="all">ALL</button>
+                        <button class="hs-tab" data-period="week">WEEK</button>
+                        <button class="hs-tab" data-period="day">TODAY</button>
+                    </div>
+                    <ul class="highscore-list" id="highscoreListMobile"></ul>
+                </div>
                 <button class="start-btn-mobile" id="startBtnMobile">AWAKEN</button>
             </div>
         </div>
@@ -101,5 +138,6 @@
     </div>
 
     <script src="tetris.js"></script>
+    <script>if('serviceWorker' in navigator) navigator.serviceWorker.register('/sw.js');</script>
 </body>
 </html>

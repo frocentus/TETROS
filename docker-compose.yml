@@ -1,0 +1,39 @@
+services:
+  frontend:
+    build: ./frontend
+    ports:
+      - "${APP_PORT:-8181}:80"
+    depends_on:
+      - backend
+
+  backend:
+    build: ./backend
+    environment:
+      DB_HOST: db
+      DB_PORT: 3306
+      DB_USER: ${DB_USER:-tetros}
+      DB_PASSWORD: ${DB_PASSWORD:-tetros_secret}
+      DB_NAME: ${DB_NAME:-tetros}
+      ADMIN_USER: ${ADMIN_USER:-admin}
+      ADMIN_PASS: ${ADMIN_PASS:-tetros_admin}
+    depends_on:
+      db:
+        condition: service_healthy
+
+  db:
+    image: mysql:8.0
+    environment:
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD:-root_secret}
+      MYSQL_DATABASE: ${DB_NAME:-tetros}
+      MYSQL_USER: ${DB_USER:-tetros}
+      MYSQL_PASSWORD: ${DB_PASSWORD:-tetros_secret}
+    volumes:
+      - tetros_data:/var/lib/mysql
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "root", "-p${MYSQL_ROOT_PASSWORD:-root_secret}"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+volumes:
+  tetros_data:
