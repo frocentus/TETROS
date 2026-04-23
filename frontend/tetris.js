@@ -85,7 +85,7 @@ window.addEventListener('resize', () => {
 // ═══════════════════════════════════════════
 // ABSTRACT ENTITIES - NOT YOUR MOTHERS TETRIS
 // ═══════════════════════════════════════════
-// Each "entity" is a non-standard abstract form — 20 shapes
+// Each "entity" is a non-standard abstract form — 16 shapes
 const SHAPES = [
     null,
     // 1 "The Spire" - tall asymmetric spike
@@ -96,63 +96,55 @@ const SHAPES = [
     [[3,0,0],[3,3,0],[0,3,3]],
     // 4 "The Shard" - crystalline diagonal
     [[0,0,4],[0,4,4],[4,4,0]],
-    // 5 "The Void" - hollow frame
-    [[5,5,5],[5,0,5],[5,5,5]],
-    // 6 "The Fang" - predatory shape
-    [[6,0,6],[6,0,6],[0,6,0]],
-    // 7 "The Sigil" - mystical asymmetric rune
-    [[0,7,0],[7,7,7],[7,0,0]],
-    // 8 "The Fracture" - broken line
-    [[8,8,0,0],[0,0,8,0],[0,0,8,8]],
-    // 9 "The Eye" - watching you
-    [[0,9,0],[9,9,9],[0,9,0],[0,9,0]],
-    // 10 "The Helix" - spiraling DNA strand
-    [[10,0,0],[0,10,0],[0,0,10],[0,10,0]],
-    // 11 "The Claw" - three prongs reaching
-    [[11,0,11],[0,11,0],[11,0,11]],
-    // 12 "The Monolith" - imposing vertical slab
-    [[12],[12],[12],[12],[12]],
-    // 13 "The Parasite" - latches on from the side
-    [[0,13,13],[13,13,0],[0,13,0]],
-    // 14 "The Crown" - royal jagged top
-    [[14,0,14,0,14],[0,14,14,14,0]],
-    // 15 "The Worm" - slithering diagonal
-    [[15,0,0],[0,15,0],[0,15,0],[0,0,15]],
-    // 16 "The Anchor" - heavy bottom
-    [[0,16,0],[0,16,0],[16,16,16],[16,0,16]],
-    // 17 "The Phantom" - barely there, L with gap
-    [[17,0],[17,0],[17,17],[0,17]],
-    // 18 "The Nebula" - scattered cosmic dust
-    [[18,0,18],[0,18,0],[18,0,18]],
-    // 19 "The Scythe" - curved blade
-    [[0,0,19],[0,19,19],[19,19,0],[19,0,0]],
-    // 20 "The Colossus" - massive 2x3 block
-    [[20,20],[20,20],[20,20]],
+    // 5 "The Fang" - predatory shape
+    [[5,0,5],[5,0,5],[0,5,0]],
+    // 6 "The Sigil" - mystical asymmetric rune
+    [[0,6,0],[6,6,6],[6,0,0]],
+    // 7 "The Fracture" - broken line
+    [[7,7,0,0],[0,0,7,0],[0,0,7,7]],
+    // 8 "The Eye" - watching you
+    [[0,8,0],[8,8,8],[0,8,0],[0,8,0]],
+    // 9 "The Monolith" - imposing vertical slab
+    [[9],[9],[9],[9],[9]],
+    // 10 "The Parasite" - latches on from the side
+    [[0,10,10],[10,10,0],[0,10,0]],
+    // 11 "The Crown" - royal jagged top
+    [[11,0,11,0,11],[0,11,11,11,0]],
+    // 12 "The Worm" - slithering diagonal
+    [[12,0,0],[0,12,0],[0,12,0],[0,0,12]],
+    // 13 "The Anchor" - heavy bottom
+    [[0,13,0],[0,13,0],[13,13,13],[13,0,13]],
+    // 14 "The Phantom" - barely there, L with gap
+    [[14,0],[14,0],[14,14],[0,14]],
+    // 15 "The Scythe" - curved blade
+    [[0,0,15],[0,15,15],[15,15,0],[15,0,0]],
+    // 16 "The Colossus" - massive 2x3 block
+    [[16,16],[16,16],[16,16]],
     // === CLASSIC TETROMINOS ===
-    // 21 I-piece
-    [[21,21,21,21]],
-    // 22 O-piece
-    [[22,22],[22,22]],
-    // 23 T-piece
-    [[0,23,0],[23,23,23]],
-    // 24 S-piece
-    [[0,24,24],[24,24,0]],
-    // 25 Z-piece
-    [[25,25,0],[0,25,25]],
-    // 26 L-piece
-    [[26,0],[26,0],[26,26]],
-    // 27 J-piece
-    [[0,27],[0,27],[27,27]],
+    // 17 I-piece
+    [[17,17,17,17]],
+    // 18 O-piece
+    [[18,18],[18,18]],
+    // 19 T-piece
+    [[0,19,0],[19,19,19]],
+    // 20 S-piece
+    [[0,20,20],[20,20,0]],
+    // 21 Z-piece
+    [[21,21,0],[0,21,21]],
+    // 22 L-piece
+    [[22,0],[22,0],[22,22]],
+    // 23 J-piece
+    [[0,23],[0,23],[23,23]],
 ];
 
 const ENTITY_NAMES = [
-    null, 'SPIRE', 'AMOEBA', 'RIFT', 'SHARD', 'VOID', 'FANG', 'SIGIL', 'FRACTURE', 'EYE',
-    'HELIX', 'CLAW', 'MONOLITH', 'PARASITE', 'CROWN', 'WORM', 'ANCHOR', 'PHANTOM', 'NEBULA', 'SCYTHE', 'COLOSSUS',
+    null, 'SPIRE', 'AMOEBA', 'RIFT', 'SHARD', 'FANG', 'SIGIL', 'FRACTURE', 'EYE',
+    'MONOLITH', 'PARASITE', 'CROWN', 'WORM', 'ANCHOR', 'PHANTOM', 'SCYTHE', 'COLOSSUS',
     'I-LINE', 'CUBE', 'T-RUNE', 'S-TWIST', 'Z-TWIST', 'L-BEND', 'J-BEND'
 ];
 
-// Colors shift based on time - these are base hues (27 entries)
-const BASE_HUES = [null, 300, 180, 60, 120, 30, 330, 210, 90, 270, 150, 345, 200, 45, 15, 240, 75, 165, 315, 105, 225, 190, 50, 280, 100, 10, 140, 260];
+// Colors shift based on time - these are base hues (23 entries)
+const BASE_HUES = [null, 300, 180, 60, 120, 330, 210, 90, 270, 200, 45, 15, 240, 75, 165, 105, 225, 190, 50, 280, 100, 10, 140, 260];
 
 let board, piece, nextPiece, score, lines, level, gameOver, paused, dropInterval, lastDrop;
 let particles = [];
@@ -1436,8 +1428,16 @@ hideGameOverUI();
 // load highscores on page load
 fetchHighscores('all');
 
+function goFullscreen() {
+    if (isMobile() && !document.fullscreenElement) {
+        const el = document.documentElement;
+        (el.requestFullscreen || el.webkitRequestFullscreen || el.msRequestFullscreen || (() => {})).call(el).catch(() => {});
+    }
+}
+
 function startGame() {
     if (countingDown) return;
+    goFullscreen();
     hideGameOverUI();
     // reset form inputs visibility
     [gameoverForm, gameoverFormM].forEach(f => f.querySelectorAll('input, .submit-btn').forEach(el => el.style.display = ''));
