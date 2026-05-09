@@ -117,9 +117,17 @@ app.post('/api/scores', rateLimit, async (req, res) => {
         return res.status(400).json({ error: 'Score validation failed' });
     }
 
-    const cleanName = username.trim().slice(0, 20);
+    // Sanitize: reject names/emails containing HTML tags or control characters
+    const sanitize = (str, maxLen) => {
+        const cleaned = str.trim().replace(/[<>]/g, '').replace(/[\x00-\x08\x0B\x0C\x0E-\x1F]/g, '');
+        return cleaned.slice(0, maxLen);
+    };
+    const cleanName = sanitize(username, 20);
+    if (!cleanName) {
+        return res.status(400).json({ error: 'Username is required' });
+    }
     const cleanEmail = (email && typeof email === 'string' && email.trim().length > 0)
-        ? email.trim().slice(0, 60)
+        ? sanitize(email, 60)
         : null;
 
     try {
