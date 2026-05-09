@@ -1,6 +1,6 @@
-const express = require('express');
-const mysql = require('mysql2/promise');
-const cors = require('cors');
+const express = require("express");
+const mysql = require("mysql2/promise");
+const cors = require("cors");
 
 const app = express();
 app.use(cors());
@@ -9,21 +9,25 @@ app.use(express.json());
 const PORT = process.env.PORT || 3001;
 
 const dbConfig = {
-    host: process.env.DB_HOST || 'db',
-    port: parseInt(process.env.DB_PORT || '3306', 10),
-    user: process.env.DB_USER || 'tetros',
-    password: process.env.DB_PASSWORD || 'tetros_secret',
-    database: process.env.DB_NAME || 'tetros',
+	host: process.env.DB_HOST || "db",
+	port: parseInt(process.env.DB_PORT || "3306", 10),
+	user: process.env.DB_USER || "tetros",
+	password: process.env.DB_PASSWORD || "tetros_secret",
+	database: process.env.DB_NAME || "tetros",
 };
 
 let pool;
 
 async function initDb() {
-    for (let attempt = 1; attempt <= 20; attempt++) {
-        try {
-            pool = mysql.createPool({ ...dbConfig, waitForConnections: true, connectionLimit: 5 });
-            const conn = await pool.getConnection();
-            await conn.execute(`
+	for (let attempt = 1; attempt <= 20; attempt++) {
+		try {
+			pool = mysql.createPool({
+				...dbConfig,
+				waitForConnections: true,
+				connectionLimit: 5,
+			});
+			const conn = await pool.getConnection();
+			await conn.execute(`
                 CREATE TABLE IF NOT EXISTS highscores (
                     id INT AUTO_INCREMENT PRIMARY KEY,
                     username VARCHAR(20) NOT NULL,
@@ -34,16 +38,16 @@ async function initDb() {
                     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
                 )
             `);
-            conn.release();
-            console.log(`DB connected (attempt ${attempt})`);
-            return;
-        } catch (err) {
-            console.log(`DB connect attempt ${attempt}/20 failed: ${err.message}`);
-            await new Promise(r => setTimeout(r, 3000));
-        }
-    }
-    console.error('Could not connect to database after 20 attempts');
-    process.exit(1);
+			conn.release();
+			console.log(`DB connected (attempt ${attempt})`);
+			return;
+		} catch (err) {
+			console.log(`DB connect attempt ${attempt}/20 failed: ${err.message}`);
+			await new Promise((r) => setTimeout(r, 3000));
+		}
+	}
+	console.error("Could not connect to database after 20 attempts");
+	process.exit(1);
 }
 
 // ═══════════════════════════
@@ -51,125 +55,144 @@ async function initDb() {
 // ═══════════════════════════
 const rateMap = new Map();
 const RATE_WINDOW = 60_000; // 1 minute
-const RATE_MAX = 5;         // max 5 score submissions per minute per IP
+const RATE_MAX = 5; // max 5 score submissions per minute per IP
 
 function rateLimit(req, res, next) {
-    const ip = req.headers['x-real-ip'] || req.ip;
-    const now = Date.now();
-    let entry = rateMap.get(ip);
-    if (!entry || now - entry.start > RATE_WINDOW) {
-        entry = { start: now, count: 0 };
-        rateMap.set(ip, entry);
-    }
-    entry.count++;
-    if (entry.count > RATE_MAX) {
-        return res.status(429).json({ error: 'Too many requests. Wait a moment.' });
-    }
-    next();
+	const ip = req.headers["x-real-ip"] || req.ip;
+	const now = Date.now();
+	let entry = rateMap.get(ip);
+	if (!entry || now - entry.start > RATE_WINDOW) {
+		entry = { start: now, count: 0 };
+		rateMap.set(ip, entry);
+	}
+	entry.count++;
+	if (entry.count > RATE_MAX) {
+		return res.status(429).json({ error: "Too many requests. Wait a moment." });
+	}
+	next();
 }
 
 // cleanup stale entries every 5 min
 setInterval(() => {
-    const now = Date.now();
-    for (const [ip, entry] of rateMap) {
-        if (now - entry.start > RATE_WINDOW * 2) rateMap.delete(ip);
-    }
+	const now = Date.now();
+	for (const [ip, entry] of rateMap) {
+		if (now - entry.start > RATE_WINDOW * 2) rateMap.delete(ip);
+	}
 }, 300_000);
 
 // ═══════════════════════════
 // ANTI-CHEAT: score validation
 // ═══════════════════════════
 function validateScore(score, level, lines) {
-    // basic sanity checks
-    if (!Number.isInteger(score) || score < 0 || score > 999_999) return false;
-    if (!Number.isInteger(level) || level < 1 || level > 100) return false;
-    if (!Number.isInteger(lines) || lines < 0 || lines > 9999) return false;
+	// basic sanity checks
+	if (!Number.isInteger(score) || score < 0 || score > 999_999) return false;
+	if (!Number.isInteger(level) || level < 1 || level > 100) return false;
+	if (!Number.isInteger(lines) || lines < 0 || lines > 9999) return false;
 
-    // level should roughly match lines (level = floor(lines/10) + 1)
-    const expectedLevel = Math.floor(lines / 10) + 1;
-    if (level > expectedLevel + 2) return false; // small tolerance
+	// level should roughly match lines (level = floor(lines/10) + 1)
+	const expectedLevel = Math.floor(lines / 10) + 1;
+	if (level > expectedLevel + 2) return false; // small tolerance
 
-    // max theoretical score per line: ~800 * level + combo bonuses
-    // generous upper bound: 1500 points per line cleared * level
-    const maxReasonable = lines * 1500 * level + 5000;
-    if (score > maxReasonable && lines > 0) return false;
+	// max theoretical score per line: ~800 * level + combo bonuses
+	// generous upper bound: 1500 points per line cleared * level
+	const maxReasonable = lines * 1500 * level + 5000;
+	if (score > maxReasonable && lines > 0) return false;
 
-    // zero lines but high score? only hard-drop points (2 per row * rows)
-    // generous: max ~50 points per piece drop, ~500 pieces max
-    if (lines === 0 && score > 25000) return false;
+	// zero lines but high score? only hard-drop points (2 per row * rows)
+	// generous: max ~50 points per piece drop, ~500 pieces max
+	if (lines === 0 && score > 25000) return false;
 
-    return true;
+	return true;
+}
+
+// ═══════════════════════════
+// Input sanitization (module scope — defined once)
+// ═══════════════════════════
+const INVALID_CHARS = /[<>\u200B-\u200D\u2028\u2029\u202A-\u202E\uFEFF]/g;
+const CONTROL_CHARS = /[\x00-\x08\x0B\x0C\x0E-\x1F]/g;
+
+function sanitize(str, maxLen) {
+    return str
+        .trim()
+        .replace(INVALID_CHARS, "")
+        .replace(CONTROL_CHARS, "")
+        .normalize("NFC")
+        .slice(0, maxLen);
 }
 
 // ═══════════════════════════
 // POST /api/scores
 // ═══════════════════════════
-app.post('/api/scores', rateLimit, async (req, res) => {
-    const { username, email, score, level, lines } = req.body;
+app.post("/api/scores", rateLimit, async (req, res) => {
+	const { username, email, score, level, lines } = req.body;
 
-    if (!username || typeof username !== 'string' || username.trim().length === 0) {
-        return res.status(400).json({ error: 'Username is required' });
-    }
-    if (typeof score !== 'number' || typeof level !== 'number' || typeof lines !== 'number') {
-        return res.status(400).json({ error: 'Invalid data types' });
-    }
-    if (!validateScore(score, level, lines)) {
-        return res.status(400).json({ error: 'Score validation failed' });
-    }
+	if (
+		!username ||
+		typeof username !== "string" ||
+		username.trim().length === 0
+	) {
+		return res.status(400).json({ error: "Username is required" });
+	}
+	if (
+		typeof score !== "number" ||
+		typeof level !== "number" ||
+		typeof lines !== "number"
+	) {
+		return res.status(400).json({ error: "Invalid data types" });
+	}
+	if (!validateScore(score, level, lines)) {
+		return res.status(400).json({ error: "Score validation failed" });
+	}
 
-    // Sanitize: reject names/emails containing HTML tags or control characters
-    const sanitize = (str, maxLen) => {
-        const cleaned = str.trim().replace(/[<>]/g, '').replace(/[\x00-\x08\x0B\x0C\x0E-\x1F]/g, '');
-        return cleaned.slice(0, maxLen);
-    };
-    const cleanName = sanitize(username, 20);
-    if (!cleanName) {
-        return res.status(400).json({ error: 'Username is required' });
-    }
-    const cleanEmail = (email && typeof email === 'string' && email.trim().length > 0)
-        ? sanitize(email, 60)
-        : null;
+	const cleanName = sanitize(username, 20);
+	if (!cleanName) {
+		return res.status(400).json({ error: "Username contains only invalid characters" });
+	}
+	const cleanEmail =
+		email && typeof email === "string" && email.trim().length > 0
+			? sanitize(email, 60)
+			: null;
 
-    try {
-        await pool.execute(
-            'INSERT INTO highscores (username, email, score, level, lines_cleared) VALUES (?, ?, ?, ?, ?)',
-            [cleanName, cleanEmail, score, level, lines]
-        );
-        res.json({ ok: true });
-    } catch (err) {
-        console.error('Insert error:', err.message);
-        res.status(500).json({ error: 'Database error' });
-    }
+	try {
+		await pool.execute(
+			"INSERT INTO highscores (username, email, score, level, lines_cleared) VALUES (?, ?, ?, ?, ?)",
+			[cleanName, cleanEmail, score, level, lines],
+		);
+		res.json({ ok: true });
+	} catch (err) {
+		console.error("Insert error:", err.message);
+		res.status(500).json({ error: "Database error" });
+	}
 });
 
 // ═══════════════════════════
 // GET /api/scores?period=all|week|day
 // ═══════════════════════════
-app.get('/api/scores', async (req, res) => {
-    const period = req.query.period || 'all';
-    const limit = Math.min(Math.max(parseInt(req.query.limit, 10) || 10, 1), 100);
-    let dateFilter = '';
+app.get("/api/scores", async (req, res) => {
+	const period = req.query.period || "all";
+	const limit = Math.min(Math.max(parseInt(req.query.limit, 10) || 10, 1), 100);
+	let dateFilter = "";
 
-    if (period === 'day') {
-        dateFilter = 'WHERE created_at >= CURDATE()';
-    } else if (period === 'week') {
-        dateFilter = 'WHERE created_at >= DATE_SUB(CURDATE(), INTERVAL 7 DAY)';
-    }
+	if (period === "day") {
+		dateFilter = "WHERE created_at >= CURDATE()";
+	} else if (period === "week") {
+		dateFilter = "WHERE created_at >= DATE_SUB(CURDATE(), INTERVAL 7 DAY)";
+	}
 
-    try {
-        const [rows] = await pool.execute(
-            `SELECT username, score, level, lines_cleared FROM highscores ${dateFilter} ORDER BY score DESC LIMIT ?`,
-            [limit]
-        );
-        res.json(rows);
-    } catch (err) {
-        console.error('Query error:', err.message);
-        res.status(500).json({ error: 'Database error' });
-    }
+	try {
+		const [rows] = await pool.execute(
+			`SELECT username, score, level, lines_cleared FROM highscores ${dateFilter} ORDER BY score DESC LIMIT ?`,
+			[limit],
+		);
+		res.json(rows);
+	} catch (err) {
+		console.error("Query error:", err.message);
+		res.status(500).json({ error: "Database error" });
+	}
 });
 
 // health check
-app.get('/api/health', (_req, res) => res.json({ status: 'ok' }));
+app.get("/api/health", (_req, res) => res.json({ status: "ok" }));
 
 // ═══════════════════════════════════════
 // ADMIN PANEL — password-protected
@@ -178,29 +201,31 @@ const ADMIN_USER = process.env.ADMIN_USER;
 const ADMIN_PASS = process.env.ADMIN_PASS;
 
 if (!ADMIN_USER || !ADMIN_PASS) {
-    console.error('FATAL: ADMIN_USER and ADMIN_PASS environment variables must be set');
-    process.exit(1);
+	console.error(
+		"FATAL: ADMIN_USER and ADMIN_PASS environment variables must be set",
+	);
+	process.exit(1);
 }
 
 function adminAuth(req, res, next) {
-    const auth = req.headers.authorization;
-    if (!auth || !auth.startsWith('Basic ')) {
-        res.set('WWW-Authenticate', 'Basic realm="TETROS Admin"');
-        return res.status(401).send('Authentication required');
-    }
-    const decoded = Buffer.from(auth.slice(6), 'base64').toString();
-    const [user, pass] = decoded.split(':');
-    if (user !== ADMIN_USER || pass !== ADMIN_PASS) {
-        res.set('WWW-Authenticate', 'Basic realm="TETROS Admin"');
-        return res.status(401).send('Invalid credentials');
-    }
-    next();
+	const auth = req.headers.authorization;
+	if (!auth || !auth.startsWith("Basic ")) {
+		res.set("WWW-Authenticate", 'Basic realm="TETROS Admin"');
+		return res.status(401).send("Authentication required");
+	}
+	const decoded = Buffer.from(auth.slice(6), "base64").toString();
+	const [user, pass] = decoded.split(":");
+	if (user !== ADMIN_USER || pass !== ADMIN_PASS) {
+		res.set("WWW-Authenticate", 'Basic realm="TETROS Admin"');
+		return res.status(401).send("Invalid credentials");
+	}
+	next();
 }
 
 // admin API: stats
-app.get('/thevoid/api/stats', adminAuth, async (_req, res) => {
-    try {
-        const [[totals]] = await pool.execute(`
+app.get("/thevoid/api/stats", adminAuth, async (_req, res) => {
+	try {
+		const [[totals]] = await pool.execute(`
             SELECT
                 COUNT(*) AS total_games,
                 COUNT(DISTINCT username) AS unique_players,
@@ -211,29 +236,29 @@ app.get('/thevoid/api/stats', adminAuth, async (_req, res) => {
                 COALESCE(MAX(level), 0) AS max_level
             FROM highscores
         `);
-        const [[today]] = await pool.execute(
-            'SELECT COUNT(*) AS games_today FROM highscores WHERE created_at >= CURDATE()'
-        );
-        const [[week]] = await pool.execute(
-            'SELECT COUNT(*) AS games_week FROM highscores WHERE created_at >= DATE_SUB(CURDATE(), INTERVAL 7 DAY)'
-        );
-        const [byDay] = await pool.execute(`
+		const [[today]] = await pool.execute(
+			"SELECT COUNT(*) AS games_today FROM highscores WHERE created_at >= CURDATE()",
+		);
+		const [[week]] = await pool.execute(
+			"SELECT COUNT(*) AS games_week FROM highscores WHERE created_at >= DATE_SUB(CURDATE(), INTERVAL 7 DAY)",
+		);
+		const [byDay] = await pool.execute(`
             SELECT DATE(created_at) AS day, COUNT(*) AS games, ROUND(AVG(score)) AS avg_score
             FROM highscores
             WHERE created_at >= DATE_SUB(CURDATE(), INTERVAL 30 DAY)
             GROUP BY DATE(created_at) ORDER BY day DESC
         `);
-        res.json({ ...totals, ...today, ...week, daily: byDay });
-    } catch (err) {
-        console.error('Admin stats error:', err.message);
-        res.status(500).json({ error: 'Database error' });
-    }
+		res.json({ ...totals, ...today, ...week, daily: byDay });
+	} catch (err) {
+		console.error("Admin stats error:", err.message);
+		res.status(500).json({ error: "Database error" });
+	}
 });
 
 // admin API: all players
-app.get('/thevoid/api/players', adminAuth, async (_req, res) => {
-    try {
-        const [rows] = await pool.execute(`
+app.get("/thevoid/api/players", adminAuth, async (_req, res) => {
+	try {
+		const [rows] = await pool.execute(`
             SELECT
                 username,
                 email,
@@ -247,16 +272,16 @@ app.get('/thevoid/api/players', adminAuth, async (_req, res) => {
             GROUP BY username, email
             ORDER BY best_score DESC
         `);
-        res.json(rows);
-    } catch (err) {
-        console.error('Admin players error:', err.message);
-        res.status(500).json({ error: 'Database error' });
-    }
+		res.json(rows);
+	} catch (err) {
+		console.error("Admin players error:", err.message);
+		res.status(500).json({ error: "Database error" });
+	}
 });
 
 // admin dashboard HTML
-app.get('/thevoid', adminAuth, (_req, res) => {
-    res.send(ADMIN_HTML);
+app.get("/thevoid", adminAuth, (_req, res) => {
+	res.send(ADMIN_HTML);
 });
 
 const ADMIN_HTML = `<!DOCTYPE html>
@@ -341,7 +366,7 @@ load();
 </html>`;
 
 initDb().then(() => {
-    app.listen(PORT, '0.0.0.0', () => {
-        console.log(`Tetros API listening on port ${PORT}`);
-    });
+	app.listen(PORT, "0.0.0.0", () => {
+		console.log(`Tetros API listening on port ${PORT}`);
+	});
 });

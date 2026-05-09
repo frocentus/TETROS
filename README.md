@@ -18,6 +18,10 @@ Psychedelisches Tetris mit abstrakten Formen, generativer Musik und Neon-Visuals
 ## Quickstart
 
 ```bash
+# Copy and edit the environment file (required for admin credentials)
+cp .env.example .env
+# Edit .env and set ADMIN_USER + ADMIN_PASS to strong values
+
 docker compose up -d
 ```
 
@@ -30,6 +34,7 @@ Erreichbar unter **http://localhost:8181/thevoid**
 Zugangsdaten via Environment-Variablen `ADMIN_USER` / `ADMIN_PASS` in `docker-compose.yml` setzen.
 
 Zeigt:
+
 - Gesamtstatistiken (Spiele, Spieler, Scores, Lines, Level)
 - Aktivitäts-Chart der letzten 30 Tage
 - Alle Spieler mit Email, Spielanzahl, Best/Avg Score, letzter Aktivität
@@ -58,34 +63,34 @@ tetros/
 
 ## Stack
 
-| Komponente | Technologie |
-|---|---|
-| Frontend | Vanilla JS, Canvas, CSS |
-| Backend | Node.js, Express |
-| Datenbank | MySQL 8.0 |
-| Webserver | nginx (reverse proxy) |
-| Container | Docker Compose |
+| Komponente | Technologie             |
+| ---------- | ----------------------- |
+| Frontend   | Vanilla JS, Canvas, CSS |
+| Backend    | Node.js, Express        |
+| Datenbank  | MySQL 8.0               |
+| Webserver  | nginx (reverse proxy)   |
+| Container  | Docker Compose          |
 
 ## API
 
-| Endpoint | Methode | Beschreibung |
-|---|---|---|
-| `/api/scores` | GET | Top 10 Highscores (`?period=all\|week\|day`) |
-| `/api/scores` | POST | Score einreichen (`{username, email?, score, level, lines}`) |
-| `/api/health` | GET | Health check |
-| `/admin` | GET | Admin Dashboard (Basic Auth) |
+| Endpoint      | Methode | Beschreibung                                                 |
+| ------------- | ------- | ------------------------------------------------------------ |
+| `/api/scores` | GET     | Top 10 Highscores (`?period=all\|week\|day`)                 |
+| `/api/scores` | POST    | Score einreichen (`{username, email?, score, level, lines}`) |
+| `/api/health` | GET     | Health check                                                 |
+| `/admin`      | GET     | Admin Dashboard (Basic Auth)                                 |
 
 ## Konfiguration
 
 Alle Einstellungen via Environment-Variablen in `docker-compose.yml`:
 
-| Variable | Default | Beschreibung |
-|---|---|---|
-| `DB_HOST` | `db` | MySQL Host |
-| `DB_USER` | `tetros` | MySQL User |
+| Variable      | Default         | Beschreibung   |
+| ------------- | --------------- | -------------- |
+| `DB_HOST`     | `db`            | MySQL Host     |
+| `DB_USER`     | `tetros`        | MySQL User     |
 | `DB_PASSWORD` | `tetros_secret` | MySQL Passwort |
-| `ADMIN_USER` | *required* | Admin Login |
-| `ADMIN_PASS` | *required* | Admin Passwort |
+| `ADMIN_USER`  | _required_      | Admin Login    |
+| `ADMIN_PASS`  | _required_      | Admin Passwort |
 
 ## Security Notes
 
