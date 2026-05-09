@@ -158,7 +158,8 @@ app.get('/api/scores', async (req, res) => {
 
     try {
         const [rows] = await pool.execute(
-            `SELECT username, score, level, lines_cleared FROM highscores ${dateFilter} ORDER BY score DESC LIMIT ${limit}`
+            `SELECT username, score, level, lines_cleared FROM highscores ${dateFilter} ORDER BY score DESC LIMIT ?`,
+            [limit]
         );
         res.json(rows);
     } catch (err) {
