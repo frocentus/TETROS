@@ -27,10 +27,7 @@ Das Spiel läuft auf **http://localhost:8181**
 
 Erreichbar unter **http://localhost:8181/thevoid**
 
-| | |
-|---|---|
-| **User** | `admin` |
-| **Passwort** | `tetros_admin` |
+Zugangsdaten via Environment-Variablen `ADMIN_USER` / `ADMIN_PASS` in `docker-compose.yml` setzen.
 
 Zeigt:
 - Gesamtstatistiken (Spiele, Spieler, Scores, Lines, Level)

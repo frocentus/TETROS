@@ -14,8 +14,8 @@ services:
       DB_USER: ${DB_USER:-tetros}
       DB_PASSWORD: ${DB_PASSWORD:-tetros_secret}
       DB_NAME: ${DB_NAME:-tetros}
-      ADMIN_USER: ${ADMIN_USER:-admin}
-      ADMIN_PASS: ${ADMIN_PASS:-tetros_admin}
+      ADMIN_USER: ${ADMIN_USER}
+      ADMIN_PASS: ${ADMIN_PASS}
     depends_on:
       db:
         condition: service_healthy

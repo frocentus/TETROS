@@ -173,8 +173,13 @@ app.get('/api/health', (_req, res) => res.json({ status: 'ok' }));
 // ═══════════════════════════════════════
 // ADMIN PANEL — password-protected
 // ═══════════════════════════════════════
-const ADMIN_USER = process.env.ADMIN_USER || 'admin';
-const ADMIN_PASS = process.env.ADMIN_PASS || 'tetros_admin';
+const ADMIN_USER = process.env.ADMIN_USER;
+const ADMIN_PASS = process.env.ADMIN_PASS;
+
+if (!ADMIN_USER || !ADMIN_PASS) {
+    console.error('FATAL: ADMIN_USER and ADMIN_PASS environment variables must be set');
+    process.exit(1);
+}
 
 function adminAuth(req, res, next) {
     const auth = req.headers.authorization;
