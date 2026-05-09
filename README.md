@@ -84,5 +84,11 @@ Alle Einstellungen via Environment-Variablen in `docker-compose.yml`:
 | `DB_HOST` | `db` | MySQL Host |
 | `DB_USER` | `tetros` | MySQL User |
 | `DB_PASSWORD` | `tetros_secret` | MySQL Passwort |
-| `ADMIN_USER` | `admin` | Admin Login |
-| `ADMIN_PASS` | `tetros_admin` | Admin Passwort |
+| `ADMIN_USER` | *required* | Admin Login |
+| `ADMIN_PASS` | *required* | Admin Passwort |
+
+## Security Notes
+
+- The admin panel uses HTTP Basic Authentication. **Do not expose this application directly to the internet without TLS (HTTPS).** Basic Auth sends credentials as base64 (not encrypted) on every request.
+- Always change `DB_PASSWORD` and `MYSQL_ROOT_PASSWORD` from their defaults before deploying.
+- Set strong, unique values for `ADMIN_USER` and `ADMIN_PASS`.
