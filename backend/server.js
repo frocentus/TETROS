@@ -214,7 +214,13 @@ function adminAuth(req, res, next) {
 		return res.status(401).send("Authentication required");
 	}
 	const decoded = Buffer.from(auth.slice(6), "base64").toString();
-	const [user, pass] = decoded.split(":");
+	const separatorIndex = decoded.indexOf(":");
+	if (separatorIndex === -1) {
+		res.set("WWW-Authenticate", 'Basic realm="TETROS Admin"');
+		return res.status(401).send("Invalid credentials");
+	}
+	const user = decoded.slice(0, separatorIndex);
+	const pass = decoded.slice(separatorIndex + 1);
 	if (user !== ADMIN_USER || pass !== ADMIN_PASS) {
 		res.set("WWW-Authenticate", 'Basic realm="TETROS Admin"');
 		return res.status(401).send("Invalid credentials");
